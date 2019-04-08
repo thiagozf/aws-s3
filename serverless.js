@@ -61,7 +61,7 @@ class AwsS3 extends Component {
     const nameChanged = this.state.name && this.state.name !== config.name
 
     if (nameChanged) {
-      await this.remove({ name: config.name })
+      await this.remove({ name: this.state.name })
     }
 
     this.state.name = config.name
