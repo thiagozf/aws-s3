@@ -82,6 +82,8 @@ await bucket.upload({ file: './my-file.txt' })
 
 ```
 
+For a full example on how this component could be used, [take a look at how the website component is using it](https://github.com/serverless-components/Website/blob/master/serverless.js#L81).
+
 &nbsp;
 
 ### New to Components?
