@@ -1,3 +1,4 @@
+# AWS S3
 
 Instantly deploy and manage your S3 buckets with [Serverless Components](https://github.com/serverless/components). Supports single key configuration for acceleration & website policies, as well as file & directory uploads.
 
