@@ -35,6 +35,10 @@ class AwsS3 extends Component {
     } catch (e) {
       if (e.code === 'NotFound') {
         await clients.regular.createBucket({ Bucket: config.name }).promise()
+        // there's a race condition when using acceleration
+        // so we need to sleep for a couple seconds. See this issue:
+        // https://github.com/serverless/components/issues/428
+        await sleep(2000)
       } else if (e.code === 'Forbidden') {
         throw Error(`Bucket name "${config.name}" is already taken.`)
       } else {
