@@ -1,4 +1,4 @@
-# AWS S3
+# aws-s3
 
 Instantly deploy and manage your S3 buckets with [Serverless Components](https://github.com/serverless/components). Supports single key configuration for acceleration & website policies, as well as file & directory uploads.
 
@@ -57,7 +57,7 @@ myBucket:
 ### 4. Deploy
 
 ```console
-AwsS3 (master)$ ️components
+aws-s3 (master)$ ️components
 
   AwsS3 › outputs:
   name:  'example-serverless-components-bucket'
@@ -68,7 +68,7 @@ AwsS3 (master)$ ️components
 
   4s › dev › AwsS3 › done
 
-AwsS3 (master)$
+aws-s3 (master)$
 
 ```
 
@@ -92,7 +92,7 @@ await bucket.upload({ file: './my-file.txt' })
 
 ```
 
-For a full example on how this component could be used, [take a look at how the website component is using it](https://github.com/serverless-components/Website/blob/master/serverless.js#L81).
+For a full example on how this component could be used, [take a look at how the website component is using it](https://github.com/serverless-components/website/blob/master/serverless.js#L81).
 
 &nbsp;
 
