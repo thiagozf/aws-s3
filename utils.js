@@ -8,7 +8,7 @@ const { isEmpty } = require('ramda')
 const { createReadStream } = require('fs-extra')
 const archiver = require('archiver')
 
-const { readFileIfExists } = require('@serverless/components')
+const { utils } = require('@serverless/components')
 
 const getClients = (credentials, region) => {
   const params = {
@@ -114,7 +114,7 @@ const uploadDir = async (s3, bucketName, dirPath) => {
 }
 
 const packAndUploadDir = async ({ s3, bucketName, dirPath, key, append = [] }) => {
-  const ignore = (await readFileIfExists(path.join(dirPath, '.slsignore'))) || []
+  const ignore = (await utils.readFileIfExists(path.join(dirPath, '.slsignore'))) || []
   return new Promise((resolve, reject) => {
     const archive = archiver('zip', {
       zlib: { level: 9 }
