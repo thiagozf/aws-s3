@@ -12,7 +12,7 @@ const {
 } = require('./utils')
 
 const defaults = {
-  name: 'serverless-core-2',
+  name: 'serverless',
   website: false,
   accelerated: true,
   region: 'us-east-1'
