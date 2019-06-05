@@ -1,6 +1,6 @@
 const path = require('path')
 const { mergeDeepRight } = require('ramda')
-const { Component, fileExists, dirExists, sleep } = require('@serverless/components')
+const { Component, utils } = require('@serverless/components')
 const {
   getClients,
   configureWebsite,
@@ -36,9 +36,9 @@ class AwsS3 extends Component {
       if (e.code === 'NotFound') {
         await clients.regular.createBucket({ Bucket: config.name }).promise()
         // there's a race condition when using acceleration
-        // so we need to sleep for a couple seconds. See this issue:
+        // so we need to utils.sleep for a couple seconds. See this issue:
         // https://github.com/serverless/components/issues/428
-        await sleep(2000)
+        await utils.sleep(2000)
       } else if (e.code === 'Forbidden') {
         throw Error(`Bucket name "${config.name}" is already taken.`)
       } else {
@@ -115,7 +115,7 @@ class AwsS3 extends Component {
 
     const clients = getClients(this.context.credentials.aws, region)
 
-    if (inputs.dir && (await dirExists(inputs.dir))) {
+    if (inputs.dir && (await utils.dirExists(inputs.dir))) {
       if (inputs.zip) {
         // pack & upload using multipart uploads
         const defaultKey = Math.random()
@@ -136,7 +136,7 @@ class AwsS3 extends Component {
           inputs.dir
         )
       }
-    } else if (inputs.file && (await fileExists(inputs.file))) {
+    } else if (inputs.file && (await utils.fileExists(inputs.file))) {
       // upload a single file using multipart uploads
       await uploadFile({
         s3: this.state.accelerated ? clients.accelerated : clients.regular,
