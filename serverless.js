@@ -12,7 +12,7 @@ const {
 } = require('./utils')
 
 const defaults = {
-  name: 'serverless',
+  name: 'serverless-core-2',
   website: false,
   accelerated: true,
   region: 'us-east-1'
@@ -26,7 +26,7 @@ class AwsS3 extends Component {
       throw new Error('Accelerated buckets must be DNS-compliant and must NOT contain periods')
     }
 
-    this.cli.status(`Deploying`)
+    this.ui.status(`Deploying`)
 
     const clients = getClients(this.context.credentials.aws, config.region)
 
@@ -73,7 +73,11 @@ class AwsS3 extends Component {
     this.state.accelerated = config.accelerated
     await this.save()
 
-    this.cli.outputs(config)
+    this.ui.log()
+    this.ui.output('bucket', `     ${config.name}`)
+    this.ui.output('region', `     ${config.region}`)
+    this.ui.output('accelerated', `${config.accelerated}`)
+    this.ui.output('website', `    ${config.website}`)
     return config
   }
 
@@ -85,7 +89,7 @@ class AwsS3 extends Component {
     const name = inputs.name || this.state.name
     const region = inputs.region || this.state.region || defaults.region
 
-    this.cli.status(`Removing`)
+    this.ui.status(`Removing`)
 
     const clients = getClients(this.context.credentials.aws, region)
 
@@ -98,25 +102,11 @@ class AwsS3 extends Component {
     return {}
   }
 
-  async clear() {
-    this.cli.status(`Clearing`)
-    const clients = getClients(this.context.credentials.aws, defaults.region)
-
-    const res = await clients.regular.listBuckets().promise()
-
-    const promises = res.Buckets.map(async (bucket) => {
-      await this.remove({ name: bucket.Name })
-      await sleep(1000)
-    })
-
-    await Promise.all(promises)
-  }
-
   async upload(inputs = {}) {
-    this.cli.status('Uploading')
+    this.ui.status('Uploading')
 
     if (!inputs.name && !this.state.name) {
-      this.cli.log('no bucket name found in state.')
+      this.ui.log('no bucket name found in state.')
       return
     }
 
