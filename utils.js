@@ -8,7 +8,7 @@ const { isEmpty } = require('ramda')
 const { createReadStream } = require('fs-extra')
 const archiver = require('archiver')
 
-const { utils } = require('@serverless/components')
+const { utils } = require('@serverless/core')
 
 const getClients = (credentials, region) => {
   const params = {
