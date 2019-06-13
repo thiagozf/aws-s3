@@ -1,6 +1,6 @@
 const path = require('path')
 const { mergeDeepRight } = require('ramda')
-const { Component, utils } = require('@serverless/components')
+const { Component, utils } = require('@serverless/core')
 const {
   getClients,
   configureWebsite,
@@ -26,7 +26,7 @@ class AwsS3 extends Component {
       throw new Error('Accelerated buckets must be DNS-compliant and must NOT contain periods')
     }
 
-    this.ui.status(`Deploying`)
+    this.context.status(`Deploying`)
 
     const clients = getClients(this.context.credentials.aws, config.region)
 
@@ -73,11 +73,11 @@ class AwsS3 extends Component {
     this.state.accelerated = config.accelerated
     await this.save()
 
-    this.ui.log()
-    this.ui.output('bucket', `     ${config.name}`)
-    this.ui.output('region', `     ${config.region}`)
-    this.ui.output('accelerated', `${config.accelerated}`)
-    this.ui.output('website', `    ${config.website}`)
+    this.context.log()
+    this.context.output('bucket', `     ${config.name}`)
+    this.context.output('region', `     ${config.region}`)
+    this.context.output('accelerated', `${config.accelerated}`)
+    this.context.output('website', `    ${config.website}`)
     return config
   }
 
@@ -89,7 +89,7 @@ class AwsS3 extends Component {
     const name = inputs.name || this.state.name
     const region = inputs.region || this.state.region || defaults.region
 
-    this.ui.status(`Removing`)
+    this.context.status(`Removing`)
 
     const clients = getClients(this.context.credentials.aws, region)
 
@@ -103,10 +103,10 @@ class AwsS3 extends Component {
   }
 
   async upload(inputs = {}) {
-    this.ui.status('Uploading')
+    this.context.status('Uploading')
 
     if (!inputs.name && !this.state.name) {
-      this.ui.log('no bucket name found in state.')
+      this.context.log('no bucket name found in state.')
       return
     }
 
