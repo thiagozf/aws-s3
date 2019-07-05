@@ -132,7 +132,8 @@ class AwsS3 extends Component {
   async upload(inputs = {}) {
     this.context.status('Uploading')
 
-    const { name, region } = this.state
+    const name = this.state.name || inputs.name
+    const region = this.state.region || inputs.region || defaults.region
 
     if (!name) {
       throw Error('Unable to upload. Bucket name not found in state.')
