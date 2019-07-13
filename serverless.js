@@ -53,9 +53,7 @@ class AwsS3 extends Component {
       }
     }
 
-    this.context.debug(
-      `Setting acceleration to "${String(config.accelerated)}" for bucket ${config.name}.`
-    )
+    this.context.debug(`Setting acceleration to "${config.accelerated}" for bucket ${config.name}.`)
     await clients.regular
       .putBucketAccelerateConfiguration({
         AccelerateConfiguration: {
