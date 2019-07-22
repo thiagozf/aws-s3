@@ -7,7 +7,6 @@ const UploadStream = require('s3-stream-upload')
 const { isEmpty } = require('ramda')
 const { createReadStream } = require('fs-extra')
 const archiver = require('archiver')
-
 const { utils } = require('@serverless/core')
 
 const getClients = (credentials, region) => {
@@ -197,6 +196,25 @@ const clearBucket = async (s3, bucketName) => {
   }
 }
 
+const accelerateBucket = async (s3, bucketName, accelerated) => {
+  try {
+    return s3
+      .putBucketAccelerateConfiguration({
+        AccelerateConfiguration: {
+          Status: accelerated ? 'Enabled' : 'Suspended'
+        },
+        Bucket: bucketName
+      })
+      .promise()
+  } catch (e) {
+    if (e.code === 'NoSuchBucket') {
+      await utils.sleep(5000)
+      return accelerateBucket(s3, bucketName, accelerated)
+    }
+    throw e
+  }
+}
+
 const deleteBucket = async (s3, bucketName) => {
   try {
     await s3.deleteBucket({ Bucket: bucketName }).promise()
@@ -214,5 +232,6 @@ module.exports = {
   packAndUploadDir,
   uploadFile,
   clearBucket,
+  accelerateBucket,
   deleteBucket
 }
