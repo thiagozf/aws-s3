@@ -5,6 +5,7 @@ const {
   getClients,
   configureWebsite,
   clearBucket,
+  accelerateBucket,
   deleteBucket,
   uploadDir,
   packAndUploadDir,
@@ -54,14 +55,7 @@ class AwsS3 extends Component {
     }
 
     this.context.debug(`Setting acceleration to "${config.accelerated}" for bucket ${config.name}.`)
-    await clients.regular
-      .putBucketAccelerateConfiguration({
-        AccelerateConfiguration: {
-          Status: config.accelerated ? 'Enabled' : 'Suspended'
-        },
-        Bucket: config.name
-      })
-      .promise()
+    await accelerateBucket(clients.regular, config.name, config.accelerated)
 
     if (config.website) {
       this.context.debug(`Configuring bucket ${config.name} for website hosting.`)
