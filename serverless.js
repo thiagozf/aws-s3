@@ -3,17 +3,17 @@ const { mergeDeepRight } = require('ramda')
 const { Component, utils } = require('@serverless/core')
 const {
   getClients,
-  configureWebsite,
   clearBucket,
   accelerateBucket,
   deleteBucket,
   uploadDir,
   packAndUploadDir,
-  uploadFile
+  uploadFile,
+  ensureBucket
 } = require('./utils')
 
 const defaults = {
-  website: false,
+  name: undefined,
   accelerated: true,
   region: 'us-east-1'
 }
@@ -24,45 +24,23 @@ class AwsS3 extends Component {
 
     this.context.status(`Deploying`)
 
-    config.name = this.state.name || this.context.resourceId()
+    config.name = inputs.name || this.context.resourceId()
 
     this.context.debug(`Deploying bucket ${config.name} in region ${config.region}.`)
 
-    // todo we probably don't need this logic now that we auto generate names
-    if (config.accelerated && config.name.includes('.')) {
-      throw new Error('Accelerated buckets must be DNS-compliant and must NOT contain periods')
-    }
-
     const clients = getClients(this.context.credentials.aws, config.region)
+    await ensureBucket(clients.regular, config.name, this.context.debug)
 
-    try {
-      this.context.debug(`Checking if bucket ${config.name} exists.`)
-      await clients.regular.headBucket({ Bucket: config.name }).promise()
-    } catch (e) {
-      if (e.code === 'NotFound') {
-        this.context.debug(`Bucket ${config.name} does not exist. Creating...`)
-        await clients.regular.createBucket({ Bucket: config.name }).promise()
-        // there's a race condition when using acceleration
-        // so we need to sleep for a couple seconds. See this issue:
-        // https://github.com/serverless/components/issues/428
-        this.context.debug(`Bucket ${config.name} created, but giving AWS 5 seconds to sync...`)
-        await utils.sleep(5000)
-      } else if (e.code === 'Forbidden') {
-        throw Error(`Bucket name "${config.name}" is already taken.`)
-      } else {
-        throw e
+    // todo we probably don't need this logic now that we auto generate names
+    if (config.accelerated) {
+      if (config.name.includes('.')) {
+        throw new Error('Accelerated buckets must be DNS-compliant and must NOT contain periods')
       }
-    }
 
-    this.context.debug(`Setting acceleration to "${config.accelerated}" for bucket ${config.name}.`)
-    await accelerateBucket(clients.regular, config.name, config.accelerated)
-
-    if (config.website) {
-      this.context.debug(`Configuring bucket ${config.name} for website hosting.`)
-      await configureWebsite(
-        config.accelerated ? clients.accelerated : clients.regular,
-        config.name
+      this.context.debug(
+        `Setting acceleration to "${config.accelerated}" for bucket ${config.name}.`
       )
+      await accelerateBucket(clients.regular, config.name, config.accelerated)
     }
 
     // todo we probably don't need this logic now that we auto generate names
@@ -74,13 +52,12 @@ class AwsS3 extends Component {
     this.state.name = config.name
     this.state.region = config.region
     this.state.accelerated = config.accelerated
-    this.state.website = config.website
     await this.save()
 
     this.context.debug(
       `Bucket ${config.name} was successfully deployed to the ${config.region} region.`
     )
-    return config
+    return this.state
   }
 
   async remove() {
@@ -110,9 +87,8 @@ class AwsS3 extends Component {
 
     const outputs = {
       name: this.state.name,
-      accelerated: this.state.accelerated,
-      website: this.state.website,
-      region: this.state.region
+      region: this.state.region,
+      accelerated: this.state.accelerated
     }
 
     this.state = {}

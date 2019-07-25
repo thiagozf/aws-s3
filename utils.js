@@ -23,63 +23,38 @@ const getClients = (credentials, region) => {
   }
 }
 
-const configureWebsite = async (s3, bucketName) => {
-  const s3BucketPolicy = {
-    Version: '2012-10-17',
-    Statement: [
-      {
-        Sid: 'PublicReadGetObject',
-        Effect: 'Allow',
-        Principal: {
-          AWS: '*'
-        },
-        Action: ['s3:GetObject'],
-        Resource: [`arn:aws:s3:::${bucketName}/*`]
-      }
-    ]
+const bucketCreation = async (s3, Bucket) => {
+  try {
+    return s3.headBucket({ Bucket }).promise()
+  } catch (e) {
+    if (e.code === 'NotFound') {
+      await utils.sleep(2000)
+      return bucketCreation(s3, Bucket)
+    }
+    throw new Error(e)
   }
-  const staticHostParams = {
-    Bucket: bucketName,
-    WebsiteConfiguration: {
-      ErrorDocument: {
-        Key: 'error.html'
-      },
-      IndexDocument: {
-        Suffix: 'index.html'
-      }
+}
+
+const ensureBucket = async (s3, name, debug) => {
+  try {
+    debug(`Checking if bucket ${name} exists.`)
+    await s3.headBucket({ Bucket: name }).promise()
+  } catch (e) {
+    if (e.code === 'NotFound') {
+      debug(`Bucket ${name} does not exist. Creating...`)
+      await s3.createBucket({ Bucket: name }).promise()
+      // there's a race condition when using acceleration
+      // so we need to sleep for a couple seconds. See this issue:
+      // https://github.com/serverless/components/issues/428
+      debug(`Bucket ${name} created. Confirming it's ready...`)
+      await bucketCreation(s3, name)
+      debug(`Bucket ${name} creation confirmed.`)
+    } else if (e.code === 'Forbidden') {
+      throw Error(`Bucket name "${name}" is already taken.`)
+    } else {
+      throw e
     }
   }
-
-  const putPostDeleteHeadRule = {
-    AllowedMethods: ['PUT', 'POST', 'DELETE', 'HEAD'],
-    AllowedOrigins: ['https://*.amazonaws.com'],
-    AllowedHeaders: ['*'],
-    MaxAgeSeconds: 0
-  }
-  const getRule = {
-    AllowedMethods: ['GET'],
-    AllowedOrigins: ['*'],
-    AllowedHeaders: ['*'],
-    MaxAgeSeconds: 0
-  }
-
-  await s3
-    .putBucketPolicy({
-      Bucket: bucketName,
-      Policy: JSON.stringify(s3BucketPolicy)
-    })
-    .promise()
-
-  await s3
-    .putBucketCors({
-      Bucket: bucketName,
-      CORSConfiguration: {
-        CORSRules: [putPostDeleteHeadRule, getRule]
-      }
-    })
-    .promise()
-
-  await s3.putBucketWebsite(staticHostParams).promise()
 }
 
 const uploadDir = async (s3, bucketName, dirPath) => {
@@ -226,12 +201,13 @@ const deleteBucket = async (s3, bucketName) => {
 }
 
 module.exports = {
-  configureWebsite,
   getClients,
   uploadDir,
   packAndUploadDir,
   uploadFile,
   clearBucket,
   accelerateBucket,
-  deleteBucket
+  deleteBucket,
+  bucketCreation,
+  ensureBucket
 }
