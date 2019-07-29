@@ -49,6 +49,8 @@ const ensureBucket = async (s3, name, debug) => {
       debug(`Bucket ${name} created. Confirming it's ready...`)
       await bucketCreation(s3, name)
       debug(`Bucket ${name} creation confirmed.`)
+    } else if (e.code === 'Forbidden' && e.message === null) {
+      throw Error(`Forbidden: Invalid credentials or this AWS S3 bucket name may already be taken`)
     } else if (e.code === 'Forbidden') {
       throw Error(`Bucket name "${name}" is already taken.`)
     } else {
