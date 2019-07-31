@@ -27,7 +27,7 @@ const bucketCreation = async (s3, Bucket) => {
   try {
     return s3.headBucket({ Bucket }).promise()
   } catch (e) {
-    if (e.code === 'NotFound') {
+    if (e.code === 'NotFound' || e.code === 'NoSuchBucket') {
       await utils.sleep(2000)
       return bucketCreation(s3, Bucket)
     }
