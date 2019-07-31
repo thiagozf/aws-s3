@@ -48,9 +48,7 @@ stage: dev
 myBucket:
   component: "@serverless/aws-s3"
   inputs:
-    name: my-bucket    # bucket name. Make sure it's globally unique
     accelerated: false # default is true. Enables upload acceleartion for the bucket
-    website: true      # default is false.. if set to true, this would apply static website hosting policies on the bucket.
     region: us-east-1
 ```
 
@@ -60,8 +58,7 @@ myBucket:
 aws-s3 (master)$ ️components
 
   AwsS3 › outputs:
-  name:  'example-serverless-components-bucket'
-  website:  false
+  name:  'qwertyu-zcvbnm'
   accelerated:  true
   region:  'us-east-1'
 
@@ -81,7 +78,7 @@ const bucket = await this.load('@serverless/components')
 
 // deploy
 await bucket({
-  name: 'example-serverless-components-bucket'
+  accelerated: true
 })
 
 // upload directory
@@ -92,7 +89,7 @@ await bucket.upload({ file: './my-file.txt' })
 
 ```
 
-For a full example on how this component could be used, [take a look at how the website component is using it](https://github.com/serverless-components/website/blob/master/serverless.js#L81).
+For a full example on how this component could be used, [take a look at how the website component is using it](https://github.com/serverless-components/website/).
 
 &nbsp;
 
