@@ -41,9 +41,6 @@ AWS_SECRET_ACCESS_KEY=XXX
 ```yml
 # serverless.yml
 
-name: my-bucket
-stage: dev
-
 myBucket:
   component: "@serverless/aws-s3"
   inputs:
