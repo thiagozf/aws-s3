@@ -28,9 +28,8 @@ $ touch serverless.yml
 $ touch .env      # your AWS api keys
 ```
 
-the `.env` file should look like this
-
 ```
+# .env
 AWS_ACCESS_KEY_ID=XXX
 AWS_SECRET_ACCESS_KEY=XXX
 ```
