@@ -24,7 +24,7 @@ class AwsS3 extends Component {
 
     this.context.status(`Deploying`)
 
-    config.name = inputs.name || this.context.resourceId()
+    config.name = inputs.name || this.state.name || this.context.resourceId()
 
     this.context.debug(`Deploying bucket ${config.name} in region ${config.region}.`)
 
