@@ -25,7 +25,7 @@ const getClients = (credentials, region) => {
 
 const bucketCreation = async (s3, Bucket) => {
   try {
-    return s3.headBucket({ Bucket }).promise()
+    await s3.headBucket({ Bucket }).promise()
   } catch (e) {
     if (e.code === 'NotFound' || e.code === 'NoSuchBucket') {
       await utils.sleep(2000)
@@ -175,7 +175,7 @@ const clearBucket = async (s3, bucketName) => {
 
 const accelerateBucket = async (s3, bucketName, accelerated) => {
   try {
-    return s3
+    await s3
       .putBucketAccelerateConfiguration({
         AccelerateConfiguration: {
           Status: accelerated ? 'Enabled' : 'Suspended'
@@ -185,7 +185,7 @@ const accelerateBucket = async (s3, bucketName, accelerated) => {
       .promise()
   } catch (e) {
     if (e.code === 'NoSuchBucket') {
-      await utils.sleep(5000)
+      await utils.sleep(2000)
       return accelerateBucket(s3, bucketName, accelerated)
     }
     throw e
