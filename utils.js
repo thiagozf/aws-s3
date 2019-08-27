@@ -59,7 +59,7 @@ const ensureBucket = async (s3, name, debug) => {
   }
 }
 
-const uploadDir = async (s3, bucketName, dirPath) => {
+const uploadDir = async (s3, bucketName, dirPath, options) => {
   const items = await new Promise((resolve, reject) => {
     try {
       resolve(klawSync(dirPath))
@@ -74,9 +74,15 @@ const uploadDir = async (s3, bucketName, dirPath) => {
       return
     }
 
+    let key = path.relative(dirPath, item.path)
+
+    if (options.keyPrefix) {
+      key = path.posix.join(options.keyPrefix, key)
+    }
+
     const itemParams = {
       Bucket: bucketName,
-      Key: path.relative(dirPath, item.path),
+      Key: key,
       Body: fs.readFileSync(item.path)
     }
     const file = path.basename(item.path)
