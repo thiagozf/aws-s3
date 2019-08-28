@@ -131,7 +131,8 @@ class AwsS3 extends Component {
         await uploadDir(
           this.state.accelerated ? clients.accelerated : clients.regular,
           name,
-          inputs.dir
+          inputs.dir,
+          { keyPrefix: inputs.keyPrefix }
         )
       }
     } else if (inputs.file && (await utils.fileExists(inputs.file))) {
