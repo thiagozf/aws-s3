@@ -52,6 +52,7 @@ class AwsS3 extends Component {
     this.state.name = config.name
     this.state.region = config.region
     this.state.accelerated = config.accelerated
+    this.state.url = `https://${config.name}.s3.amazonaws.com`
     await this.save()
 
     this.context.debug(
