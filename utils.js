@@ -142,7 +142,8 @@ const uploadFile = async ({ s3, bucketName, filePath, key }) => {
       .pipe(
         UploadStream(s3, {
           Bucket: bucketName,
-          Key: key
+          Key: key,
+          ContentType: mime.lookup(filePath) || 'application/octet-stream'
         })
       )
       .on('error', function(err) {
