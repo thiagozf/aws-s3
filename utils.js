@@ -80,6 +80,11 @@ const uploadDir = async (s3, bucketName, dirPath, options) => {
       key = path.posix.join(options.keyPrefix, key)
     }
 
+    // convert backslashes to forward slashes on windows
+    if (path.sep === '\\') {
+      key = key.replace(/\\/g, '/')
+    }
+
     const itemParams = {
       Bucket: bucketName,
       Key: key,
