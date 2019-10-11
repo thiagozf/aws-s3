@@ -45,6 +45,18 @@ myBucket:
   inputs:
     accelerated: false # default is true. Enables upload acceleartion for the bucket
     region: us-east-1
+    cors:
+      CORSRules:
+      - AllowedHeaders:
+        - "*"
+        AllowedMethods:
+        - PUT
+        - POST
+        - DELETE
+        AllowedOrigins:
+        - http://www.example.com
+        MaxAgeSeconds: 3000
+
 ```
 
 ### 4. Deploy
