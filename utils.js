@@ -59,7 +59,7 @@ const ensureBucket = async (s3, name, debug) => {
   }
 }
 
-const uploadDir = async (s3, bucketName, dirPath, options) => {
+const uploadDir = async (s3, bucketName, dirPath, cacheControl, options) => {
   const items = await new Promise((resolve, reject) => {
     try {
       resolve(klawSync(dirPath))
@@ -88,11 +88,10 @@ const uploadDir = async (s3, bucketName, dirPath, options) => {
     const itemParams = {
       Bucket: bucketName,
       Key: key,
-      Body: fs.readFileSync(item.path)
+      Body: fs.readFileSync(item.path),
+      ContentType: mime.lookup(path.basename(item.path)) || 'application/octet-stream',
+      CacheControl: cacheControl,
     }
-    const file = path.basename(item.path)
-
-    itemParams.ContentType = mime.lookup(file) || 'application/octet-stream'
 
     uploadItems.push(s3.upload(itemParams).promise())
   })
@@ -100,7 +99,7 @@ const uploadDir = async (s3, bucketName, dirPath, options) => {
   await Promise.all(uploadItems)
 }
 
-const packAndUploadDir = async ({ s3, bucketName, dirPath, key, append = [] }) => {
+const packAndUploadDir = async ({ s3, bucketName, dirPath, key, append = [], cacheControl }) => {
   const ignore = (await utils.readFileIfExists(path.join(dirPath, '.slsignore'))) || []
   return new Promise((resolve, reject) => {
     const archive = archiver('zip', {
@@ -127,7 +126,8 @@ const packAndUploadDir = async ({ s3, bucketName, dirPath, key, append = [] }) =
       .pipe(
         UploadStream(s3, {
           Bucket: bucketName,
-          Key: key
+          Key: key,
+          CacheControl: cacheControl
         })
       )
       .on('error', function(err) {
@@ -141,14 +141,15 @@ const packAndUploadDir = async ({ s3, bucketName, dirPath, key, append = [] }) =
   })
 }
 
-const uploadFile = async ({ s3, bucketName, filePath, key }) => {
+const uploadFile = async ({ s3, bucketName, filePath, key, cacheControl }) => {
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(
         UploadStream(s3, {
           Bucket: bucketName,
           Key: key,
-          ContentType: mime.lookup(filePath) || 'application/octet-stream'
+          ContentType: mime.lookup(filePath) || 'application/octet-stream',
+          CacheControl: cacheControl,
         })
       )
       .on('error', function(err) {

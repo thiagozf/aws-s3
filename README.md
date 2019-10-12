@@ -85,6 +85,17 @@ await bucket.upload({ file: './my-file.txt' })
 
 ```
 
+[Cache-control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) headers can also be set:
+
+```js
+
+// upload directory, setting cache-control headers
+await bucket.upload({ dir: './my-files', cacheControl: 'max-age=86400' })
+
+// upload file, setting cache-control header
+await bucket.upload({ file: './my-file.txt', cacheControl: 'max-age=86400' })
+```
+
 For a full example on how this component could be used, [take a look at how the website component is using it](https://github.com/serverless-components/website/).
 
 &nbsp;
