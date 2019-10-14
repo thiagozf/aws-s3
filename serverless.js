@@ -9,7 +9,8 @@ const {
   uploadDir,
   packAndUploadDir,
   uploadFile,
-  ensureBucket
+  ensureBucket,
+  configureCors
 } = require('./utils')
 
 const defaults = {
@@ -41,6 +42,13 @@ class AwsS3 extends Component {
         `Setting acceleration to "${config.accelerated}" for bucket ${config.name}.`
       )
       await accelerateBucket(clients.regular, config.name, config.accelerated)
+    }
+
+    if (config.cors) {
+      this.context.debug(
+        `Setting cors for bucket ${config.name}.`
+      )
+      await configureCors(clients.regular, config.name, config.cors, this.context.debug)
     }
 
     // todo we probably don't need this logic now that we auto generate names
