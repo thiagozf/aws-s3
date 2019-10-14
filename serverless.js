@@ -46,7 +46,7 @@ class AwsS3 extends Component {
 
     if (config.cors) {
       this.context.debug(
-        `Setting cors to "${JSON.stringify(config.cors)}" for bucket ${config.name}.`
+        `Setting cors for bucket ${config.name}.`
       )
       await configureCors(clients.regular, config.name, config.cors, this.context.debug)
     }
