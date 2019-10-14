@@ -214,6 +214,19 @@ const deleteBucket = async (s3, bucketName) => {
   }
 }
 
+const configureCors = async (s3, bucketName, config) => {
+  const params = { Bucket: bucketName, CORSConfiguration: config }
+  try {
+    await s3.putBucketCors(params).promise()
+  } catch (e) {
+    if (e.code === 'NoSuchBucket') {
+      await utils.sleep(2000)
+      return configureCors(s3, bucketName, config)
+    }
+    throw e
+  }
+}
+
 module.exports = {
   getClients,
   uploadDir,
@@ -223,5 +236,6 @@ module.exports = {
   accelerateBucket,
   deleteBucket,
   bucketCreation,
-  ensureBucket
+  ensureBucket,
+  configureCors
 }
