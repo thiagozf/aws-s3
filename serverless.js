@@ -132,7 +132,8 @@ class AwsS3 extends Component {
           s3: this.state.accelerated ? clients.accelerated : clients.regular,
           bucketName: name,
           dirPath: inputs.dir,
-          key: inputs.key || `${defaultKey}.zip`
+          key: inputs.key || `${defaultKey}.zip`,
+          cacheControl: inputs.cacheControl,
         })
       } else {
         this.context.debug(`Uploading directory ${inputs.dir} to bucket ${name}`)
@@ -141,6 +142,7 @@ class AwsS3 extends Component {
           this.state.accelerated ? clients.accelerated : clients.regular,
           name,
           inputs.dir,
+          inputs.cacheControl,
           { keyPrefix: inputs.keyPrefix }
         )
       }
@@ -152,7 +154,8 @@ class AwsS3 extends Component {
         s3: this.state.accelerated ? clients.accelerated : clients.regular,
         bucketName: name,
         filePath: inputs.file,
-        key: inputs.key || path.basename(inputs.file)
+        key: inputs.key || path.basename(inputs.file),
+        cacheControl: inputs.cacheControl,
       })
 
       this.context.debug(
