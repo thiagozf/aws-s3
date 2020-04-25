@@ -1,0 +1,10 @@
+name: thiagozf-aws-s3
+version: 0.0.1
+author: thiagozf
+org: thiagozf
+description: Deploys an AWS S3 Bucket
+keywords: aws, serverless, s3, bucket
+repo: https://github.com/serverless-components/aws-s3
+readme: ''
+license: MIT
+main: ./src

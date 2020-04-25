@@ -3,7 +3,6 @@ const fs = require('fs')
 const path = require('path')
 const klawSync = require('klaw-sync')
 const mime = require('mime-types')
-const UploadStream = require('s3-stream-upload')
 const { isEmpty } = require('ramda')
 const { createReadStream } = require('fs-extra')
 const archiver = require('archiver')
@@ -58,112 +57,6 @@ const ensureBucket = async (s3, name, debug) => {
     }
   }
 }
-
-const uploadDir = async (s3, bucketName, dirPath, cacheControl, options) => {
-  const items = await new Promise((resolve, reject) => {
-    try {
-      resolve(klawSync(dirPath))
-    } catch (error) {
-      reject(error)
-    }
-  })
-
-  const uploadItems = []
-  items.forEach((item) => {
-    if (item.stats.isDirectory()) {
-      return
-    }
-
-    let key = path.relative(dirPath, item.path)
-
-    if (options.keyPrefix) {
-      key = path.posix.join(options.keyPrefix, key)
-    }
-
-    // convert backslashes to forward slashes on windows
-    if (path.sep === '\\') {
-      key = key.replace(/\\/g, '/')
-    }
-
-    const itemParams = {
-      Bucket: bucketName,
-      Key: key,
-      Body: fs.readFileSync(item.path),
-      ContentType: mime.lookup(path.basename(item.path)) || 'application/octet-stream',
-      CacheControl: cacheControl,
-    }
-
-    uploadItems.push(s3.upload(itemParams).promise())
-  })
-
-  await Promise.all(uploadItems)
-}
-
-const packAndUploadDir = async ({ s3, bucketName, dirPath, key, append = [], cacheControl }) => {
-  const ignore = (await utils.readFileIfExists(path.join(dirPath, '.slsignore'))) || []
-  return new Promise((resolve, reject) => {
-    const archive = archiver('zip', {
-      zlib: { level: 9 }
-    })
-
-    if (!isEmpty(append)) {
-      append.forEach((file) => {
-        const fileStream = createReadStream(file)
-        archive.append(fileStream, { name: path.basename(file) })
-      })
-    }
-
-    archive.glob(
-      '**/*',
-      {
-        cwd: dirPath,
-        ignore
-      },
-      {}
-    )
-
-    archive
-      .pipe(
-        UploadStream(s3, {
-          Bucket: bucketName,
-          Key: key,
-          CacheControl: cacheControl
-        })
-      )
-      .on('error', function(err) {
-        return reject(err)
-      })
-      .on('finish', function() {
-        return resolve()
-      })
-
-    archive.finalize()
-  })
-}
-
-const uploadFile = async ({ s3, bucketName, filePath, key, cacheControl }) => {
-  return new Promise((resolve, reject) => {
-    fs.createReadStream(filePath)
-      .pipe(
-        UploadStream(s3, {
-          Bucket: bucketName,
-          Key: key,
-          ContentType: mime.lookup(filePath) || 'application/octet-stream',
-          CacheControl: cacheControl,
-        })
-      )
-      .on('error', function(err) {
-        return reject(err)
-      })
-      .on('finish', function() {
-        return resolve()
-      })
-  })
-}
-
-/*
- * Delete Website Bucket
- */
 
 const clearBucket = async (s3, bucketName) => {
   try {
@@ -230,9 +123,6 @@ const configureCors = async (s3, bucketName, config) => {
 
 module.exports = {
   getClients,
-  uploadDir,
-  packAndUploadDir,
-  uploadFile,
   clearBucket,
   accelerateBucket,
   deleteBucket,
